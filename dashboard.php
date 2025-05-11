@@ -54,7 +54,7 @@ $upcoming_res = $conn->query(
     <div class="container">
       <!-- Summary Card -->
       <div class="card">
-        <h3>Summary</h3>
+        <h3>Summary:</h3>
         <table>
           <tr><th>Total Income</th><td>+ <?= number_format($income,2) ?> RWF</td></tr>
           <tr><th>Total Expenses</th><td>- <?= number_format($expense,2) ?> RWF</td></tr>
@@ -79,6 +79,7 @@ $upcoming_res = $conn->query(
               <span class="<?= $fulfilled ? 'goal-status success' : 'goal-status failed' ?>">
                 <?= $fulfilled ? '✔' : '❌' ?>
               </span>
+          
             </h4>
             <p>
               Target: <?= number_format($g['amount'],2) ?> RWF<br>
