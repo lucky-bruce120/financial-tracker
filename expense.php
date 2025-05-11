@@ -69,12 +69,8 @@ $res = $conn->query("SELECT * FROM expenses WHERE user_id = $user_id ORDER BY da
     <a href="#add-expense-form" class="fab">+</a>
 
     <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-      <a href="dashboard.php">🏠 Home</a>
-      <a href="income.php">➕ Income</a>
-      <a href="expense.php" class="active">➖ Expenses</a>
-      <a href="goals.php">🎯 Goals</a>
-    </div>
+    <?php 
+    include 'bottom-nav.php'; ?>
   </div>
 
   <script>

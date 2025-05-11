@@ -69,12 +69,8 @@ $res = $conn->query("SELECT * FROM income WHERE user_id = $user_id ORDER BY date
     <a href="#add-income-form" class="fab">+</a>
 
     <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-      <a href="dashboard.php">🏠 Home</a>
-      <a href="income.php" class="active">➕ Income</a>
-      <a href="expense.php">➖ Expenses</a>
-      <a href="goals.php">🎯 Goals</a>
-    </div>
+    <?php 
+    include 'bottom-nav.php'; ?>
   </div>
 
   <script>

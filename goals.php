@@ -138,12 +138,8 @@ $res = $conn->query("SELECT * FROM goals WHERE user_id = $user_id ORDER BY deadl
     <a href="#add-goal-form" class="fab">+</a>
 
     <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-      <a href="dashboard.php">🏠 Home</a>
-      <a href="income.php">➕ Income</a>
-      <a href="expense.php">➖ Expenses</a>
-      <a href="goals.php" class="active">🎯 Goals</a>
-    </div>
+    <?php 
+    include 'bottom-nav.php'; ?>
   </div>
 
   <script>

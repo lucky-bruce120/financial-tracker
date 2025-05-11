@@ -220,5 +220,11 @@ ul li:hover {
 
 /* Responsive */
 @media (max-width: 480px) {
-  .wrapper { padding: 0 12px; }
+  .wrapper { 
+    width: 100%;
+    max-width: 100%;
+    padding: 0 16px;
+    
+
+   }
 }
