@@ -71,6 +71,38 @@ $upcoming_res = $conn->query("
     ORDER BY deadline ASC 
     LIMIT 5
 ");
+
+// Active tab
+$active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'summary';
+
+// Transactions filter
+$transaction_filter = isset($_GET['filter']) ? $_GET['filter'] : 'daily';
+if ($transaction_filter === 'daily') {
+    $start_date = $today;
+    $end_date = $today;
+} elseif ($transaction_filter === 'weekly') {
+    $start_date = date('Y-m-d', strtotime('-7 days'));
+    $end_date = $today;
+} elseif ($transaction_filter === 'monthly') {
+    $start_date = date('Y-m-d', strtotime('-30 days'));
+    $end_date = $today;
+}
+
+// Fetch income transactions
+$income_transactions = $conn->query("
+    SELECT * FROM income 
+    WHERE user_id = $user_id 
+      AND date BETWEEN '$start_date' AND '$end_date'
+    ORDER BY date DESC
+");
+
+// Fetch expense transactions
+$expense_transactions = $conn->query("
+    SELECT * FROM expenses 
+    WHERE user_id = $user_id 
+      AND date BETWEEN '$start_date' AND '$end_date'
+    ORDER BY date DESC
+");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -92,42 +124,101 @@ $upcoming_res = $conn->query("
   </header>
 
   <div class="container">
-    <div class="card">
-      <h3>Summary:</h3>
-      <table>
-        <tr><th>Total Income</th><td>+ <?= number_format($income, 2) ?> RWF</td></tr>
-        <tr><th>Total Expenses</th><td>- <?= number_format($expense, 2) ?> RWF</td></tr>
-        <tr><th>Savings</th><td><?= number_format($savings, 2) ?> RWF</td></tr>
-      </table>
+    <div class="tabs">
+      <a href="dashboard.php?tab=summary" class="<?= isset($_GET['tab']) && $_GET['tab'] === 'summary' ? 'active' : '' ?>">Summary</a>
+      <a href="dashboard.php?tab=overdue" class="<?= isset($_GET['tab']) && $_GET['tab'] === 'overdue' ? 'active' : '' ?>">Overdue Goals</a>
+      <a href="dashboard.php?tab=upcoming" class="<?= isset($_GET['tab']) && $_GET['tab'] === 'upcoming' ? 'active' : '' ?>">Upcoming Goals</a>
     </div>
 
-    <h3 style="text-align:center; margin:16px 0;">
-      Overdue Goals 
-      <?php if ($overdue_res->num_rows): ?>
-        <span class="badge"><?= $overdue_res->num_rows ?></span>
-      <?php endif; ?>
-    </h3>
+    <?php if ($active_tab === 'summary'): ?>
+      <div class="card">
+        <h3>Summary:</h3>
+        <table>
+          <tr><th>Total Income</th><td>+ <?= number_format($income, 2) ?> RWF</td></tr>
+          <tr><th>Total Expenses</th><td>- <?= number_format($expense, 2) ?> RWF</td></tr>
+          <tr><th>Savings</th><td><?= number_format($savings, 2) ?> RWF</td></tr>
+        </table>
+      </div>
 
-    <div style="text-align:center; margin-top:20px;">
-      <a href="goals.php?filter=pending" class="btn small-btn">📋 View Overdue Goals</a>
-    </div>
+      <!-- Recent Transactions with Filter -->
+      <div class="card">
+        <h3>Transactions</h3>
 
-    <div style="text-align:center; margin-top:20px;">
-      <a href="goals.php?filter=completed" class="btn small-btn">📁 Goals Archived</a>
-    </div>
+        <!-- Filter Options -->
+        <div class="transaction-filters">
+          <a href="dashboard.php?tab=summary&filter=daily" class="<?= $transaction_filter === 'daily' ? 'active' : '' ?>">Daily</a>
+          <a href="dashboard.php?tab=summary&filter=weekly" class="<?= $transaction_filter === 'weekly' ? 'active' : '' ?>">Weekly</a>
+          <a href="dashboard.php?tab=summary&filter=monthly" class="<?= $transaction_filter === 'monthly' ? 'active' : '' ?>">Monthly</a>
+        </div>
 
-    <h3 style="text-align:center; margin:24px 0;">Upcoming Goals</h3>
-    <ul>
-      <?php if ($upcoming_res->num_rows): ?>
-        <?php while ($g = $upcoming_res->fetch_assoc()): ?>
-          <li><?= htmlspecialchars($g['title']) ?> - <?= $g['deadline'] ?></li>
-        <?php endwhile; ?>
-      <?php else: ?>
-        <li>No upcoming goals.</li>
-      <?php endif; ?>
-    </ul>
+        <!-- Income Transactions -->
+        <div class="transaction-list">
+          <h4>Income</h4>
+          <?php if ($income_transactions->num_rows > 0): ?>
+            <ul>
+              <?php
+              $count = 0; // Limit to 5 recent transactions
+              while ($income = $income_transactions->fetch_assoc()): 
+                if ($count >= 5) break;
+                $count++;
+              ?>
+                <li>
+                  <span><?= htmlspecialchars($income['description'] ?? 'No description') ?></span>
+                  <span>+ <?= number_format($income['amount'], 2) ?> RWF</span>
+                  <span><?= $income['date'] ?></span>
+                </li>
+              <?php endwhile; ?>
+            </ul>
+          <?php else: ?>
+            <p>No recent income transactions found.</p>
+          <?php endif; ?>
+        </div>
 
-    
+        <!-- Expense Transactions -->
+        <div class="transaction-list">
+          <h4>Expenses</h4>
+          <?php if ($expense_transactions->num_rows > 0): ?>
+            <ul>
+              <?php
+              $count = 0; // Limit to 5 recent transactions
+              while ($expense = $expense_transactions->fetch_assoc()): 
+                if ($count >= 5) break;
+                $count++;
+              ?>
+                <li>
+                  <span><?= htmlspecialchars($expense['description'] ?? 'No description') ?></span>
+                  <span>- <?= number_format($expense['amount'], 2) ?> RWF</span>
+                  <span><?= $expense['date'] ?></span>
+                </li>
+              <?php endwhile; ?>
+            </ul>
+          <?php else: ?>
+            <p>No recent expense transactions found.</p>
+          <?php endif; ?>
+        </div>
+      </div>
+    <?php elseif ($active_tab === 'overdue'): ?>
+      <h3 style="text-align:center; margin:16px 0;">
+        Overdue Goals 
+        <?php if ($overdue_res->num_rows): ?>
+          <span class="badge"><?= $overdue_res->num_rows ?></span>
+        <?php endif; ?>
+      </h3>
+      <div style="text-align:center; margin-top:20px;">
+        <a href="goals.php?filter=pending" class="btn small-btn">📋 View Overdue Goals</a>
+      </div>
+    <?php elseif ($active_tab === 'upcoming'): ?>
+      <h3 style="text-align:center; margin:24px 0;">Upcoming Goals</h3>
+      <ul>
+        <?php if ($upcoming_res->num_rows): ?>
+          <?php while ($g = $upcoming_res->fetch_assoc()): ?>
+            <li><?= htmlspecialchars($g['title']) ?> - <?= $g['deadline'] ?></li>
+          <?php endwhile; ?>
+        <?php else: ?>
+          <li>No upcoming goals.</li>
+        <?php endif; ?>
+      </ul>
+    <?php endif; ?>
   </div>
 
   <!-- Goal Form -->
@@ -142,7 +233,10 @@ $upcoming_res = $conn->query("
     </form>
   </div>
 
+  <!-- Bottom Navigation -->
   <?php include 'bottom-nav.php'; ?>
+  </div>
+
 </div>
 <script>
   function toggleGoalForm() {
