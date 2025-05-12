@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth/login.php");
@@ -7,6 +8,10 @@ if (!isset($_SESSION['user_id'])) {
 include 'config/db.php';
 
 $user_id = $_SESSION['user_id'];
+
+// Handle search
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search_sql = $search ? "AND source LIKE '%" . $conn->real_escape_string($search) . "%'" : '';
 
 // Handle new income
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['source'], $_POST['amount'])) {
@@ -17,11 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['source'], $_POST['amo
         $stmt->bind_param("isd", $user_id, $source, $amount);
         $stmt->execute();
         $stmt->close();
+
+        // Redirect to the same page with the search query pre-filled
+        header("Location: income.php?search=" . urlencode($source));
+        exit;
     }
 }
 
 // Fetch incomes
-$res = $conn->query("SELECT * FROM income WHERE user_id = $user_id ORDER BY date DESC");
+$res = $conn->query("SELECT * FROM income WHERE user_id = $user_id $search_sql ORDER BY date DESC");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,17 +60,23 @@ $res = $conn->query("SELECT * FROM income WHERE user_id = $user_id ORDER BY date
       </form>
 
       <h3 style="margin:16px 0; text-align:center;">Recent Income</h3>
+      <!-- Search Form -->
+      <form method="GET" class="card" style="margin-bottom: 20px;">
+        <input type="text" name="search" placeholder="Search income title..." value="<?= htmlspecialchars($search) ?>">
+        <button type="submit" class="btn small-btn">Search</button>
+      </form>
+
       <?php if ($res->num_rows): ?>
         <?php while ($row = $res->fetch_assoc()): ?>
           <div class="card">
             <h4><?= htmlspecialchars($row['source']) ?></h4>
-            <p>+ <?= number_format($row['amount'],2) ?> RWF<br>
+            <p>+ <?= number_format($row['amount'], 2) ?> RWF<br>
                <small><?= date('Y-m-d', strtotime($row['date'])) ?></small>
             </p>
           </div>
         <?php endwhile; ?>
       <?php else: ?>
-        <p style="text-align:center;">No income yet. Tap “+” to add one.</p>
+        <p style="text-align:center;">No income found. Tap “+” to add one.</p>
       <?php endif; ?>
     </div>
 
@@ -69,8 +84,7 @@ $res = $conn->query("SELECT * FROM income WHERE user_id = $user_id ORDER BY date
     <a href="#add-income-form" class="fab">+</a>
 
     <!-- Bottom Navigation -->
-    <?php 
-    include 'bottom-nav.php'; ?>
+    <?php include 'bottom-nav.php'; ?>
   </div>
 
   <script>
