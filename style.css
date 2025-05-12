@@ -257,24 +257,36 @@ ul li:hover {
 /* Bottom Navigation */
 .bottom-nav {
   position: fixed;
-  bottom: 0; left: 50%;
+  bottom: 0;
+  left: 50%;
   transform: translateX(-50%);
-  width: 100%; max-width: 480px;
+  width: 100%;
+  max-width: 480px;
   background: var(--header-bg);
-  display: flex; justify-content: space-around;
+  display: flex;
+  justify-content: space-around;
   padding: 12px 0;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
+
 .bottom-nav a {
   flex: 1;
   text-align: center;
   font-size: 14px;
   color: var(--text);
   transition: color var(--transition);
+  padding: 10px 0;
 }
+
 .bottom-nav a.active {
   color: var(--accent);
   font-weight: 600;
+  border-bottom: 2px solid var(--accent);
+}
+
+.bottom-nav a:hover {
+  color: var(--accent);
 }
 
 /* Badge */
@@ -293,6 +305,62 @@ ul li:hover {
   display: flex;
   justify-content: center;
   gap: 8px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  gap: 10px;
+}
+
+.tabs a {
+  padding: 10px 30px;
+  text-decoration: none;
+  color: white;
+  background-color: #facc15;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.tabs a:hover {
+  background-color: rgb(208, 173, 33);
+}
+
+.tabs a.active {
+  background-color: #4caf50; /* Green for active tab */
+  color: white;
+}
+
+.tabs a.active:hover {
+  background-color: #45a049;
+}
+
+/* Transaction Filters */
+.transaction-filters {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.transaction-filters a {
+  padding: 8px 16px;
+  text-decoration: none;
+  color: white;
+  background-color: #facc15;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.transaction-filters a:hover {
+  background-color: rgb(208, 173, 33);
+}
+
+.transaction-filters a.active {
+  background-color: #4caf50; /* Green for active filter */
+  color: white;
 }
 
 /* Responsive */

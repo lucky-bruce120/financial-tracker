@@ -6,15 +6,14 @@ if (!isset($_SESSION['user_id'])) {
 }
 include 'config/db.php';
 
-$user_id = $_SESSION['user_id'];
-$goal_id = intval($_GET['id'] ?? 0);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['goal_id'], $_POST['title'], $_POST['amount'], $_POST['deadline'])) {
+    $goal_id = intval($_POST['goal_id']);
+    $title = $conn->real_escape_string($_POST['title']);
+    $amount = floatval($_POST['amount']);
+    $deadline = $conn->real_escape_string($_POST['deadline']);
+    $user_id = $_SESSION['user_id'];
 
-// Handle update submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title    = $_POST['title'];
-    $amount   = floatval($_POST['amount']);
-    $deadline = $_POST['deadline'];
-
+    // Update the goal in the database
     $stmt = $conn->prepare("UPDATE goals SET title = ?, amount = ?, deadline = ? WHERE id = ? AND user_id = ?");
     $stmt->bind_param("sdsii", $title, $amount, $deadline, $goal_id, $user_id);
     $stmt->execute();
@@ -25,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Load existing goal
+$goal_id = intval($_GET['id'] ?? 0);
 $stmt = $conn->prepare("SELECT * FROM goals WHERE id = ? AND user_id = ?");
 $stmt->bind_param("ii", $goal_id, $user_id);
 $stmt->execute();
@@ -49,6 +49,7 @@ if (!$goal) {
   <div class="container">
     <div class="card">
       <form method="POST">
+        <input type="hidden" name="goal_id" value="<?= $goal_id ?>">
         <input type="text" name="title" value="<?= htmlspecialchars($goal['title']) ?>" required>
         <input type="number" name="amount" value="<?= $goal['amount'] ?>" required>
         <input type="date" name="deadline" value="<?= $goal['deadline'] ?>" required>

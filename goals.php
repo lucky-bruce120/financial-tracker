@@ -90,6 +90,55 @@ $completed_count = $completed_data['completed_count'];
   <title>Goals — My Wallet</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* General Button Styling */
+    .btn {
+      padding: 10px 1px;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .btn.small-btn {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    .btn.success {
+      background-color: #facc15; /* Green */
+      color: white;
+    }
+
+    .btn.success:hover {
+      background-color: #45a049;
+    }
+
+    .btn.danger {
+      background-color: #facc15; /* Red */
+      color: white;
+    }
+
+    .btn.danger:hover {
+      background-color: #45a049;
+    }
+
+    .btn.edit {
+      background-color: #facc15; /* Blue */
+      color: white;
+    }
+
+    .btn.edit:hover {
+      background-color: #45a049;
+    }
+
     /* Tabs Styling */
     .tabs {
       display: flex;
@@ -112,10 +161,12 @@ $completed_count = $completed_data['completed_count'];
     }
 
     .tabs a.active {
-      background-color: #facc15;
+      background-color: #4caf50; /* Green for active tab */
+      color: white;
     }
+
     .tabs a.active:hover {
-      background-color: rgb(208, 173, 33);
+      background-color: #45a049;
     }
 
     /* Notification Styling */
@@ -128,7 +179,43 @@ $completed_count = $completed_data['completed_count'];
       border-radius: 5px;
     }
 
-    /* Modal Styles */
+    /* Card Styling */
+    .card {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    .card button:hover {
+      background-color: #45a049;
+    }
+
+    .card h4 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 15px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Modal Styling */
     .modal {
       display: none;
       position: fixed;
@@ -139,38 +226,39 @@ $completed_count = $completed_data['completed_count'];
       background-color: rgba(0, 0, 0, 0.5);
       justify-content: center;
       align-items: center;
+      z-index: 1000;
     }
 
     .modal-content {
       background: white;
-      padding: 20px 30px;
+      padding: 30px;
       border-radius: 10px;
       width: 90%;
       max-width: 400px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      text-align: left;
+      text-align: center;
       animation: fadeIn 0.3s ease-in-out;
     }
 
     .modal-content h3 {
       margin-bottom: 20px;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
       color: #333;
-      text-align: center;
     }
 
     .modal-content label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-size: 14px;
       color: #555;
+      text-align: left;
     }
 
     .modal-content input {
       width: 100%;
       padding: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       border: 1px solid #ccc;
       border-radius: 5px;
       font-size: 14px;
@@ -194,22 +282,16 @@ $completed_count = $completed_data['completed_count'];
     }
 
     .modal-content .btn {
-      background-color: #4caf50; /* Green */
-      color: white;
       margin-right: 10px;
     }
 
-    .modal-content .btn:hover {
-      background-color: #45a049;
-    }
-
     .modal-content .close-modal {
-      background-color: #f44336; /* Red */
-      color: white;
+      background-color: #ccc; /* Gray */
+      color: black;
     }
 
     .modal-content .close-modal:hover {
-      background-color: #e53935;
+      background-color: #bbb;
     }
 
     @keyframes fadeIn {
@@ -256,10 +338,10 @@ $completed_count = $completed_data['completed_count'];
         <button class="btn">Add Goal</button>
         <!-- Tabs -->
     <div class="tabs">
-      <a href="goals.php?filter=all" class="<?= $filter === 'all' ? 'active' : '' ?>">All</a>
-      <a href="goals.php?filter=pending" class="<?= $filter === 'pending' ? 'active' : '' ?>">Pending</a>
-      <a href="goals.php?filter=completed" class="<?= $filter === 'completed' ? 'active' : '' ?>">Completed</a>
-    </div>
+  <a href="goals.php?filter=all" class="<?= $filter === 'all' ? 'active' : '' ?>">All</a>
+  <a href="goals.php?filter=pending" class="<?= $filter === 'pending' ? 'active' : '' ?>">Pending</a>
+  <a href="goals.php?filter=completed" class="<?= $filter === 'completed' ? 'active' : '' ?>">Completed</a>
+</div>
       </form>
     </div>
 
@@ -287,10 +369,10 @@ $completed_count = $completed_data['completed_count'];
               <form method="post" style="margin-bottom:8px;">
                 <input type="hidden" name="add_on_id" value="<?= $g['id'] ?>">
                 <input type="number" name="add_amount" min="1" required>
-                <button class="btn small-btn">➕ Add On</button>
+                <button class="btn small-btn success">➕ Add On</button>
               </form>
               <!-- Edit Button -->
-              <button class="btn small-btn" onclick="openEditModal(<?= $g['id'] ?>, '<?= htmlspecialchars($g['title']) ?>', <?= $g['amount'] ?>, '<?= $g['deadline'] ?>')">Edit</button>
+              <button class="btn small-btn edit" onclick="openEditModal(<?= $g['id'] ?>, '<?= htmlspecialchars($g['title']) ?>', <?= $g['amount'] ?>, '<?= $g['deadline'] ?>')">Edit</button>
               <!-- Delete Button -->
               <button class="btn small-btn danger" onclick="openDeleteModal(<?= $g['id'] ?>)">Delete</button>
             <?php elseif ($fulfilled && !$archived): ?>
@@ -318,13 +400,13 @@ $completed_count = $completed_data['completed_count'];
     <h3>Edit Goal</h3>
     <form method="POST" action="edit_goal.php">
       <input type="hidden" name="goal_id" id="editGoalId">
-      <label>Title</label>
+      <label for="editGoalTitle">Title</label>
       <input type="text" name="title" id="editGoalTitle" required>
-      <label>Target Amount</label>
+      <label for="editGoalAmount">Target Amount</label>
       <input type="number" name="amount" id="editGoalAmount" required>
-      <label>Deadline</label>
+      <label for="editGoalDeadline">Deadline</label>
       <input type="date" name="deadline" id="editGoalDeadline" required>
-      <button type="submit" class="btn">Save Changes</button>
+      <button type="submit" class="btn success">Save Changes</button>
       <button type="button" class="close-modal" onclick="closeModal('editModal')">Cancel</button>
     </form>
   </div>
@@ -359,6 +441,19 @@ $completed_count = $completed_data['completed_count'];
   function closeModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
   }
+
+  // Get the current URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const filter = urlParams.get('filter') || 'all'; // Default to 'all' if no filter is set
+
+  // Highlight the active tab
+  document.querySelectorAll('.tabs a').forEach(tab => {
+    if (tab.href.includes(`filter=${filter}`)) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
 </script>
 </body>
 </html>
