@@ -27,6 +27,21 @@ body {
 }
 a { text-decoration: none; color: inherit; }
 
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-pic {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
 /* Centered Wrapper */
 .wrapper {
   width: 100%;
@@ -92,6 +107,7 @@ header {
   border-color: var(--accent);
   outline: none;
 }
+
 
 /* Button */
 .btn {
@@ -162,20 +178,81 @@ ul li:hover {
 /* Floating Action Button */
 .fab {
   position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 64px; height: 64px;
-  background: var(--accent);
-  color: #000;
-  font-size: 36px;
-  line-height: 64px;
-  text-align: center;
+  bottom: 80px;
+  right: 20px;
+  background-color: #f7c948;
+  color: white;
+  font-size: 28px;
   border-radius: 50%;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-  cursor: pointer;
-  z-index: 10;
+  padding: 15px 20px;
+  text-decoration: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: 100;
 }
+.fab:hover {
+  background-color: #e6b800;
+  box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+}
+
+
+.goal-status.success {
+  color: green;
+  font-weight: bold;
+}
+.goal-status.failed {
+  color: red;
+  font-weight: bold;
+}
+.goal-status.pending {
+  color: orange;
+  font-weight: bold;
+}
+
+/* Archived badge */
+.badge.archived {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #e0c97c;
+  color: #000;
+  border-radius: 12px;
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+/* Optional: Adjust actions layout if needed */
+.card .actions {
+  margin-top: 10px;
+}
+
+.card .actions form {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.card .actions input[type="number"] {
+  width: 100px;
+  padding: 4px;
+  margin-right: 4px;
+  font-size: 0.9em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Goal status (✔ or ❌) */
+.goal-status {
+  font-size: 1.2em;
+  margin-left: 8px;
+}
+
+.goal-status.success {
+  color: green;
+}
+
+.goal-status.failed {
+  color: red;
+}
+
 
 /* Bottom Navigation */
 .bottom-nav {
