@@ -235,8 +235,6 @@ $expense_transactions = $conn->query("
 
   <!-- Bottom Navigation -->
   <?php include 'bottom-nav.php'; ?>
-  </div>
-
 </div>
 <script>
   function toggleGoalForm() {
