@@ -20,6 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Invalid email or password.";
     }
 }
+//end
 ?>
 <!DOCTYPE html>
 <html lang="en">
