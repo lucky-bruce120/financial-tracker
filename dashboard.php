@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 
 include 'config/db.php';
 
-$user_id = $_SESSION['user_id']; // ✅ Ensure this is defined BEFORE queries
+$user_id = $_SESSION['user_id']; // Ensure this is defined BEFORE queries
 
 // Fetch user info
 $user_stmt = $conn->prepare("SELECT full_name, profile_image FROM users WHERE id = ?");
@@ -19,11 +19,13 @@ $user_stmt->close();
 
 // Fallback image if none uploaded
 if (empty($profile_image)) {
-    $profile_image = 'default_profile.jpeg'; // Make sure this file exists in the uploads/ folder
+    $profile_image = 'default_profile.jpeg'; // Ensure this file exists in the uploads/ folder
 }
 
 // Today's date
 $today = date('Y-m-d');
+
+
 
 // Handle Mark as Read
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read_id'])) {
@@ -115,7 +117,7 @@ $expense_transactions = $conn->query("
 <div class="wrapper">
   <header>
     <div class="header-left">
-      <img src="uploads/<?= htmlspecialchars($profile_image) ?>" alt="Profile" class="profile-pic">
+      <h2> <?php echo $_SESSION['user_name']; ?></h2>
       <span><?= htmlspecialchars($full_name) ?></span>
     </div>
     <div class="header-right">
@@ -235,8 +237,6 @@ $expense_transactions = $conn->query("
 
   <!-- Bottom Navigation -->
   <?php include 'bottom-nav.php'; ?>
-  </div>
-
 </div>
 <script>
   function toggleGoalForm() {

@@ -76,12 +76,12 @@ $res = $conn->query("SELECT * FROM income WHERE user_id = $user_id $search_sql O
           </div>
         <?php endwhile; ?>
       <?php else: ?>
-        <p style="text-align:center;">No income found. Tap “+” to add one.</p>
+        
       <?php endif; ?>
     </div>
 
     <!-- Floating Add Income Button -->
-    <a href="#add-income-form" class="fab">+</a>
+   
 
     <!-- Bottom Navigation -->
     <?php include 'bottom-nav.php'; ?>

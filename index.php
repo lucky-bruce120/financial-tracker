@@ -206,10 +206,7 @@ if (isset($_SESSION['user_id'])) {
             <h3>⏰ Bill Reminders</h3>
             <p>Never miss a payment or financial deadline again.</p>
         </div>
-        <div class="feature">
-            <h3>📤 Export Options</h3>
-            <p>Download PDF/Excel reports for documentation.</p>
-        </div>
+        
     </section>
 
     <section class="cta">
