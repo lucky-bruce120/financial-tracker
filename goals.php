@@ -50,9 +50,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['title'], $_POST['amou
     $stmt->execute();
     $stmt->close();
 
+    // Backend validation for past date
+    if ($deadline < $today) {
+        echo "<script>alert('Please enter a deadline that is not in the past.');</script>";
+    } else {
+        $stmt = $conn->prepare("INSERT INTO goals (user_id, title, amount, deadline, amount_contributed, read_status) VALUES (?, ?, ?, ?, 0, 'unread')");
+        $stmt->bind_param("isds", $user_id, $title, $amount, $deadline);
+        $stmt->execute();
+        $stmt->close();
+
     header("Location: goals.php");
     exit;
-}
+}}
 
 // Handle Mark Read
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read_id'])) {
@@ -390,7 +399,7 @@ $completed_count = $completed_data['completed_count'];
     <?php endif; ?>
   </div>
 
-  <a href="#add-goal-form" class="fab">+</a>
+  
   <?php include 'bottom-nav.php'; ?>
 </div>
 

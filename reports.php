@@ -149,10 +149,10 @@ $expense_result = $expense_query->get_result();
         </div>
 
         <!-- Export Buttons -->
-        <div class="export-buttons">
+       <!-- <div class="export-buttons">
             <a href="export_pdf.php?filter=<?= $report_filter ?>" target="_blank">Export to PDF</a>
             <a href="export_excel.php?filter=<?= $report_filter ?>">Export to Excel</a>
-        </div>
+        </div>-->
 
         <!-- Income Report -->
         <h3>Income</h3>
@@ -204,5 +204,7 @@ $expense_result = $expense_query->get_result();
             <p class="no-data">No expense data available for this period.</p>
         <?php endif; ?>
     </div>
+     <!-- Bottom Navigation -->
+  <?php include 'bottom-nav.php'; ?>
 </body>
 </html>
