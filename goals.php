@@ -92,7 +92,8 @@ $query = "SELECT * FROM goals WHERE user_id = $user_id";
 if ($filter === 'pending') {
     $query .= " AND amount_contributed < amount ORDER BY deadline ASC";
 } elseif ($filter === 'completed') {
-    $query .= " AND amount_contributed >= amount ORDER BY deadline ASC";
+    // Completed goals: show unread (not marked) first, then read (marked)
+    $query .= " AND amount_contributed >= amount ORDER BY (read_status = 'read') ASC, deadline ASC";
 } else {
     $query .= " ORDER BY (amount_contributed < amount) DESC, deadline ASC"; // Pending goals first
 }
