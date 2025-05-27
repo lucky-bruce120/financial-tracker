@@ -9,7 +9,14 @@ include 'config/db.php';
 $user_id = $_SESSION['user_id'];
 $today   = date('Y-m-d');
 
-// Handle Add On
+// Calculate savings (available to save)
+$total_income  = $conn->query("SELECT SUM(amount) AS total FROM income WHERE user_id = $user_id")->fetch_assoc()['total'] ?? 0;
+$total_expense = $conn->query("SELECT SUM(amount) AS total FROM expenses WHERE user_id = $user_id")->fetch_assoc()['total'] ?? 0;
+$savings = $total_income - $total_expense;
+
+$notification_message = "";
+
+// Handle Add On (saving to a goal)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_on_id'])) {
     $goal_id = intval($_POST['add_on_id']);
     $amount  = floatval($_POST['add_amount']);
@@ -28,13 +35,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_on_id'])) {
 
         // Check if the new amount exceeds the target
         if (($current_contributed + $amount) > $target_amount) {
-            echo "<script>alert('You must enter an amount that does not exceed the target amount.');</script>";
+            $notification_message = "You must enter an amount that does not exceed the target amount.";
+        } elseif ($amount > $savings) {
+            $notification_message = "You cannot save more than your current savings (" . number_format($savings,2) . " RWF).";
         } else {
-            // Update the goal's amount_contributed
+            // Only update the goal's amount_contributed
             $stmt = $conn->prepare("UPDATE goals SET amount_contributed = amount_contributed + ? WHERE id = ? AND user_id = ?");
             $stmt->bind_param("dii", $amount, $goal_id, $user_id);
             $stmt->execute();
             $stmt->close();
+
+            // Update savings after saving (for immediate feedback in UI)
+            $savings -= $amount;
         }
     }
 }
@@ -359,6 +371,7 @@ $completed_count = $completed_data['completed_count'];
       <?php while ($g = $res->fetch_assoc()):
         $fulfilled = $g['amount_contributed'] >= $g['amount'];
         $archived  = $g['read_status'] === 'read';
+        $remaining = $g['amount'] - $g['amount_contributed'];
       ?>
         <div class="card" style="<?= $archived ? 'opacity: 0.6;' : '' ?>">
           <h4>
@@ -370,14 +383,18 @@ $completed_count = $completed_data['completed_count'];
           <p>
             Target: <?= number_format($g['amount'], 2) ?> RWF<br>
             Saved: <?= number_format($g['amount_contributed'], 2) ?> RWF<br>
+            <?php if (!$fulfilled): ?>
+              <strong>Remaining: <?= number_format($remaining, 2) ?> RWF</strong><br>
+            <?php endif; ?>
             Deadline: <?= $g['deadline'] ?>
           </p>
           <div class="actions">
             <?php if (!$fulfilled && !$archived): ?>
               <!-- Add On Button -->
-              <form method="post" style="margin-bottom:8px;">
+              <form method="post" style="margin-bottom:8px;" onsubmit="return checkGoalSaveLimit(this)">
                 <input type="hidden" name="add_on_id" value="<?= $g['id'] ?>">
                 <input type="number" name="add_amount" min="1" required>
+                <div style="margin:8px 0; color:#888;">Available to save: <?= number_format($savings,2) ?> RWF</div>
                 <button class="btn small-btn success">➕ Add On</button>
               </form>
               <!-- Edit Button -->
@@ -433,6 +450,14 @@ $completed_count = $completed_data['completed_count'];
   </div>
 </div>
 
+<!-- Notification Modal -->
+<div id="notificationModal" class="modal">
+  <div class="modal-content">
+    <h3 id="notificationMessage"></h3>
+    <button onclick="closeModal('notificationModal')">OK</button>
+  </div>
+</div>
+
 <script>
   function openEditModal(id, title, amount, deadline) {
     document.getElementById('editGoalId').value = id;
@@ -463,6 +488,25 @@ $completed_count = $completed_data['completed_count'];
       tab.classList.remove('active');
     }
   });
+
+  // JS validation for saving to goal
+  function checkGoalSaveLimit(form) {
+    var available = <?= json_encode($savings) ?>;
+    var amount = parseFloat(form.add_amount.value);
+    if (amount > available) {
+      showModal('notificationModal', 'You cannot save more than your available income (<?= number_format($savings,2) ?> RWF).');
+      return false;
+    }
+    return true;
+  }
+  function showModal(modalId, message) {
+    var modal = document.getElementById(modalId);
+    document.getElementById('notificationMessage').textContent = message;
+    modal.style.display = 'flex';
+  }
+  <?php if (!empty($notification_message)): ?>
+    showModal('notificationModal', <?= json_encode($notification_message) ?>);
+  <?php endif; ?>
 </script>
 </body>
 </html>
