@@ -2,49 +2,45 @@
 session_start();
 include '../config/db.php';
 
-$error = []; // Initialize the error array
+$name = "";
+$email = "";
+
+$error = [];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
-    $cpassword = trim($_POST['cpassword']);
+    $password = $_POST['password'];
+    $confirm = $_POST['confirm'];
 
-    // Validation checks
-    if (empty($name) || empty($email) || empty($password) || empty($cpassword)) {
-        array_push($error, "All fields are required");
+    if ($name == "") {
+        $error[] = "Name is required.";
     }
-    if (strlen($password) < 8) {
-        array_push($error, "Password must be at least 8 characters");
+    if ($email == "") {
+        $error[] = "Email is required.";
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        array_push($error, "Invalid email format");
+        $error[] = "Invalid email format.";
     }
-    if ($password != $cpassword) {
-        array_push($error, "Passwords do not match");
+    if ($password == "") {
+        $error[] = "Password is required.";
     }
-    if (!preg_match("/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/", $password)) {
-        array_push($error, 'Password must contain at least one number, one uppercase letter, and one lowercase letter.');
+    if ($password !== $confirm) {
+        $error[] = "Passwords do not match.";
     }
 
     // Check if email already exists
-    $check = $conn->prepare("SELECT * FROM users WHERE email = ?");
-    $check->bind_param("s", $email);
-    $check->execute();
-    $result = $check->get_result();
-
-    if ($result->num_rows > 0) {
-        array_push($error, "Email is already registered.");
+    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows > 0) {
+        $error[] = "Email is already registered.";
     }
+    $stmt->close();
 
-    // If there are errors, pass them to the modal
-    if (count($error) > 0) {
-        $error_messages = json_encode($error); // Convert errors to JSON for JavaScript
-    } else {
-        // Hash the password
+    if (count($error) === 0) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        // Insert into the database
         $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
         $stmt->bind_param("sss", $name, $email, $hashed_password);
         $stmt->execute();
@@ -55,247 +51,143 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: ../dashboard.php");
             exit;
         } else {
-            echo "<div class='alert alert-danger'>Registration failed. Please try again.</div>";
+            $error[] = "Registration failed. Please try again.";
         }
+        $stmt->close();
     }
 }
 ?>
-
-<!-- HTML Form -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <link rel="stylesheet" href="auth-style.css">
     <style>
-        /* Reset and base styles */
-        * {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: #f6f8fc;
+            background-color: #f4f4f9;
             color: #333;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
         }
-
-        /* Form container */
-        form {
+        .container {
             width: 100%;
             max-width: 400px;
+            background-color: #ffffff;
             padding: 30px;
-            border: 1px solid #ddd;
-            background: white;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
-            animation: fadeIn 0.4s ease-in-out;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
-
-        /* Heading */
-        form h2 {
+        h1 {
             text-align: center;
-            margin-bottom: 25px;
-            color: #222;
-            font-size: 26px;
+            color: #4f93ff;
+            margin-bottom: 20px;
         }
-
-        /* Inputs */
-        form input[type="text"],
-        form input[type="email"],
-        form input[type="password"] {
-            width: 100%;
-            padding: 12px 14px;
-            margin-bottom: 18px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-
-        form input:focus {
-            border-color: #4a90e2;
-            box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
-            outline: none;
-        }
-
-        /* Button */
-        form button {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
+        label {
             font-weight: bold;
-            background-color: #4a90e2;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-
-        form button:hover {
-            background-color: #367adf;
-            transform: translateY(-1px);
-        }
-
-        /* Link Section */
-        .lik {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .lik p {
-            font-size: 14px;
             color: #555;
         }
-
-        .lik a {
-            color: #4a90e2;
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="submit"] {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4f93ff;
+            box-shadow: 0 0 8px rgba(79, 147, 255, 0.5);
+        }
+        input[type="submit"] {
+            background-color: #4f93ff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #3273dc;
+        }
+        p {
+            text-align: center;
+            margin-top: 20px;
+            color: #555;
+        }
+        a {
+            text-align: center;
+            display: block;
+            margin-top: 15px;
+            color: #4f93ff;
             text-decoration: none;
             font-weight: bold;
         }
-
-        .lik a:hover {
+        a:hover {
+            color: #3273dc;
             text-decoration: underline;
         }
-
-        /* Modal */
         .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;
         }
-
         .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background: #fff; padding: 20px; border-radius: 10px; max-width: 350px; margin: auto; text-align: center;
         }
-
-        .modal-content h3 {
-            margin-bottom: 15px;
-            font-size: 20px;
-            color: #333;
-        }
-
-        .modal-content ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .modal-content ul li {
-            color: red;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .modal-content button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .modal-content button:hover {
-            background-color: #367adf;
-        }
-
-        /* Fade animation */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 480px) {
-            form {
-                padding: 20px;
-            }
-
-            form h2 {
-                font-size: 22px;
-            }
-
-            .modal-content {
-                padding: 15px;
-            }
-
-            .modal-content h3 {
-                font-size: 18px;
-            }
-        }
+        .modal-content button { margin-top: 15px; }
     </style>
 </head>
 <body>
+<div class="container">
+    <h1>Register</h1>
     <form method="post">
-        <h2>Register</h2>
-        <input type="text" name="name" placeholder="Full Name" required><br>
-        <input type="email" name="email" placeholder="Email" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <input type="password" name="cpassword" placeholder="Confirm Password" required><br>
-        <button type="submit">Register</button>
-
-        <div class="lik">
-            <p>Already have an account?</p>
-            <a href="login.php">Login here</a>
-        </div>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required value="<?= htmlspecialchars($name) ?>">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required value="<?= htmlspecialchars($email) ?>">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <label for="confirm">Confirm Password:</label>
+        <input type="password" id="confirm" name="confirm" required>
+        <input type="submit" value="Register">
     </form>
+    <p>Already have an account? <a href="login.php">Login</a></p>
+</div>
 
-    <!-- Modal -->
-    <div id="errorModal" class="modal">
-        <div class="modal-content">
-            <h3></h3>
-            <ul id="errorList"></ul>
-            <button onclick="closeModal()">Close</button>
-        </div>
+<!-- Modal Notification -->
+<div id="notificationModal" class="modal">
+    <div class="modal-content">
+        <h3 id="notificationMessage"></h3>
+        <button onclick="closeModal('notificationModal')">OK</button>
     </div>
+</div>
 
-    <script>
-        // Display errors in the modal
-        const errors = <?= isset($error_messages) ? $error_messages : '[]' ?>;
-        if (errors.length > 0) {
-            const errorList = document.getElementById('errorList');
-            errors.forEach(err => {
-                const li = document.createElement('li');
-                li.textContent = err;
-                errorList.appendChild(li);
-            });
-            document.getElementById('errorModal').style.display = 'flex';
-        }
 
-        // Close the modal
-        function closeModal() {
-            document.getElementById('errorModal').style.display = 'none';
-        }
-    </script>
+--
+<script>
+function showModal(modalId, message) {
+    var modal = document.getElementById(modalId);
+    document.getElementById('notificationMessage').textContent = message;
+    modal.style.display = 'flex';
+}
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+// Show error(s) as modal if exists
+<?php if (!empty($error)): ?>
+    showModal('notificationModal', <?= json_encode(implode("\n", $error)) ?>);
+<?php endif; ?>
+</script>
 </body>
 </html>
 
